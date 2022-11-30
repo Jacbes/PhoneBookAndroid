@@ -1,6 +1,7 @@
 package dev.jacbes.phonebookandroid;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,7 +51,20 @@ public class PhoneAdapter extends ArrayAdapter<User> {
         addressView.setText(users[position].getAddress());
 
         rowView.setOnClickListener(v -> {
-            Toast.makeText(context, users[position].getPhone(), Toast.LENGTH_SHORT).show();
+            Intent toDev = new Intent(context, DevActivity.class);
+            if (users[position] instanceof Person) {
+                toDev.putExtra("name", ((Person) users[position]).getFirstName() + " "
+                        + ((Person) users[position]).getSecondName());
+                toDev.putExtra("phone", users[position].getPhone());
+                toDev.putExtra("type", "Person");
+            }
+            if (users[position] instanceof Company) {
+                toDev.putExtra("name", ((Company) users[position]).getOrganization());
+                toDev.putExtra("phone", users[position].getPhone());
+                toDev.putExtra("type", "Company");
+            }
+            context.startActivity(toDev);
+//            Toast.makeText(context, users[position].getPhone(), Toast.LENGTH_SHORT).show();
         });
 
         return rowView;
