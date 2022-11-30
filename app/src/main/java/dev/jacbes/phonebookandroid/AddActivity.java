@@ -3,12 +3,15 @@ package dev.jacbes.phonebookandroid;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import dev.jacbes.phonebookandroid.data.DBHelper;
 import dev.jacbes.phonebookandroid.model.Company;
 import dev.jacbes.phonebookandroid.model.Person;
 
@@ -39,10 +42,38 @@ public class AddActivity extends AppCompatActivity {
                     } else {
                         person = new Person(name, "", phone, address);
                     }
-                    MainActivity.users.add(person);
+
+                    SQLiteDatabase database = new DBHelper(this).getReadableDatabase();
+                    Cursor cursor = database.rawQuery("SELECT * FROM users;", null);
+                    cursor.moveToLast();
+                    Integer id = cursor.getInt(0);
+                    cursor.close();
+
+                    database = new DBHelper(this).getWritableDatabase();
+                    database.execSQL("INSERT INTO users(id, type, name, phone, address) VALUES (" +
+                            id + ", " +
+                            "0" + ", " +
+                            "'" + person.getFirstName() + " " + person.getSecondName() + "'" + ", " +
+                            "'" + person.getPhone() + "'" + ", " +
+                            "'" + person.getAddress() + "'" + ");");
+                    database.close();
                 } else {
                     Company company = new Company(name, phone, address);
-                    MainActivity.users.add(company);
+
+                    SQLiteDatabase database = new DBHelper(this).getReadableDatabase();
+                    Cursor cursor = database.rawQuery("SELECT * FROM users;", null);
+                    cursor.moveToLast();
+                    Integer id = cursor.getInt(0);
+                    cursor.close();
+
+                    database = new DBHelper(this).getWritableDatabase();
+                    database.execSQL("INSERT INTO users(id, type, name, phone, address) VALUES (" +
+                            id + ", " +
+                            "1" + ", " +
+                            "'" + company.getOrganization() + "'" + ", " +
+                            "'" + company.getPhone() + "'" + ", " +
+                            "'" + company.getAddress() + "'" + ");");
+                    database.close();
                 }
                 finish();
             }
