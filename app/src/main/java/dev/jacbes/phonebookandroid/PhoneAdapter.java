@@ -8,10 +8,11 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import java.util.List;
 
 import dev.jacbes.phonebookandroid.model.Company;
 import dev.jacbes.phonebookandroid.model.Person;
@@ -20,10 +21,10 @@ import dev.jacbes.phonebookandroid.model.User;
 public class PhoneAdapter extends ArrayAdapter<User> {
 
     private final Context context;
-    private final User[] users;
+    private final List<User> users;
     private final int layout;
 
-    public PhoneAdapter(Context context, int layout, User[] users) {
+    public PhoneAdapter(Context context, int layout, List<User> users) {
         super(context, layout, users);
         this.context = context;
         this.users = users;
@@ -40,31 +41,30 @@ public class PhoneAdapter extends ArrayAdapter<User> {
         TextView addressView = rowView.findViewById(R.id.address);
         ImageView avatarView = rowView.findViewById(R.id.avatar);
 
-        if (users[position] instanceof Person) {
-            nameView.setText(((Person) users[position]).getFirstName() + " " + ((Person) users[position]).getSecondName());
+        if (users.get(position) instanceof Person) {
+            nameView.setText(((Person) users.get(position)).getFirstName() + " " + ((Person) users.get(position)).getSecondName());
             avatarView.setImageResource(R.drawable.ic_baseline_person_24);
         }
-        if (users[position] instanceof Company) {
-            nameView.setText(((Company) users[position]).getOrganization());
+        if (users.get(position) instanceof Company) {
+            nameView.setText(((Company) users.get(position)).getOrganization());
             avatarView.setImageResource(R.drawable.ic_baseline_corporate_fare_24);
         }
-        addressView.setText(users[position].getAddress());
+        addressView.setText(users.get(position).getAddress());
 
         rowView.setOnClickListener(v -> {
-            Intent toDev = new Intent(context, DevActivity.class);
-            if (users[position] instanceof Person) {
-                toDev.putExtra("name", ((Person) users[position]).getFirstName() + " "
-                        + ((Person) users[position]).getSecondName());
-                toDev.putExtra("phone", users[position].getPhone());
+            Intent toDev = new Intent(context, InfoActivity.class);
+            if (users.get(position) instanceof Person) {
+                toDev.putExtra("name", ((Person) users.get(position)).getFirstName() + " "
+                        + ((Person) users.get(position)).getSecondName());
+                toDev.putExtra("phone", users.get(position).getPhone());
                 toDev.putExtra("type", "Person");
             }
-            if (users[position] instanceof Company) {
-                toDev.putExtra("name", ((Company) users[position]).getOrganization());
-                toDev.putExtra("phone", users[position].getPhone());
+            if (users.get(position) instanceof Company) {
+                toDev.putExtra("name", ((Company) users.get(position)).getOrganization());
+                toDev.putExtra("phone", users.get(position).getPhone());
                 toDev.putExtra("type", "Company");
             }
             context.startActivity(toDev);
-//            Toast.makeText(context, users[position].getPhone(), Toast.LENGTH_SHORT).show();
         });
 
         return rowView;
