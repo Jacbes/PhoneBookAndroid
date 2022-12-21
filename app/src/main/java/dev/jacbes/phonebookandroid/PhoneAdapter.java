@@ -2,10 +2,12 @@ package dev.jacbes.phonebookandroid;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -40,6 +42,8 @@ public class PhoneAdapter extends ArrayAdapter<User> {
         TextView nameView = rowView.findViewById(R.id.name);
         TextView addressView = rowView.findViewById(R.id.address);
         ImageView avatarView = rowView.findViewById(R.id.avatar);
+        Button callButton = rowView.findViewById(R.id.call_button);
+        Button addContactButton = rowView.findViewById(R.id.add_contact_button);
 
         if (users.get(position) instanceof Person) {
             nameView.setText(((Person) users.get(position)).getFirstName() + " " + ((Person) users.get(position)).getSecondName());
@@ -52,19 +56,24 @@ public class PhoneAdapter extends ArrayAdapter<User> {
         addressView.setText(users.get(position).getAddress());
 
         rowView.setOnClickListener(v -> {
-            Intent toDev = new Intent(context, InfoActivity.class);
+            Intent toInfo = new Intent(context, InfoActivity.class);
             if (users.get(position) instanceof Person) {
-                toDev.putExtra("name", ((Person) users.get(position)).getFirstName() + " "
+                toInfo.putExtra("name", ((Person) users.get(position)).getFirstName() + " "
                         + ((Person) users.get(position)).getSecondName());
-                toDev.putExtra("phone", users.get(position).getPhone());
-                toDev.putExtra("type", "Person");
+                toInfo.putExtra("phone", users.get(position).getPhone());
+                toInfo.putExtra("type", "Person");
             }
             if (users.get(position) instanceof Company) {
-                toDev.putExtra("name", ((Company) users.get(position)).getOrganization());
-                toDev.putExtra("phone", users.get(position).getPhone());
-                toDev.putExtra("type", "Company");
+                toInfo.putExtra("name", ((Company) users.get(position)).getOrganization());
+                toInfo.putExtra("phone", users.get(position).getPhone());
+                toInfo.putExtra("type", "Company");
             }
-            context.startActivity(toDev);
+            context.startActivity(toInfo);
+        });
+
+        callButton.setOnClickListener(v -> {
+            Intent call = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + users.get(position).getPhone()));
+            context.startActivity(call);
         });
 
         return rowView;
