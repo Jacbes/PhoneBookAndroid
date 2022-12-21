@@ -1,8 +1,13 @@
 package dev.jacbes.phonebookandroid;
 
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
+import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +15,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -74,6 +80,48 @@ public class PhoneAdapter extends ArrayAdapter<User> {
         callButton.setOnClickListener(v -> {
             Intent call = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + users.get(position).getPhone()));
             context.startActivity(call);
+        });
+
+        addContactButton.setOnClickListener(v -> {
+            String name = "";
+            if (users.get(position) instanceof Person) {
+                name = ((Person) users.get(position)).getFirstName() + " "
+                        + ((Person) users.get(position)).getSecondName();
+            } else {
+                name = ((Company) users.get(position)).getOrganization();
+            }
+            ContentResolver contentResolver = context.getContentResolver();
+            Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+            if (cursor != null) {
+                cursor.moveToFirst();
+                while (!cursor.isAfterLast()) {
+                    int index = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
+                    if (index >= 0) {
+                        String contactName = cursor.getString(index);
+                        if (contactName.compareTo(name) == 0) {
+                            Toast.makeText(context, "Already added", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                    }
+                    cursor.moveToNext();
+                }
+            }
+
+            Uri rawContactUri = contentResolver.insert(ContactsContract.RawContacts.CONTENT_URI, new ContentValues());
+            long id = ContentUris.parseId(rawContactUri);
+
+            ContentValues value = new ContentValues();
+            value.put(ContactsContract.RawContacts.Data.RAW_CONTACT_ID, id);
+            value.put(ContactsContract.RawContacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE);
+            value.put(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, name);
+            contentResolver.insert(ContactsContract.Data.CONTENT_URI, value);
+
+            value.clear();
+            value.put(ContactsContract.RawContacts.Data.RAW_CONTACT_ID, id);
+            value.put(ContactsContract.RawContacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE);
+            value.put(ContactsContract.CommonDataKinds.Phone.NUMBER, users.get(position).getPhone());
+            value.put(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE);
+            contentResolver.insert(ContactsContract.Data.CONTENT_URI, value);
         });
 
         return rowView;
